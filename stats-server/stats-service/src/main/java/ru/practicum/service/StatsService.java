@@ -4,8 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.mapper.HitMapper;
 import ru.practicum.model.Hit;
-import ru.practicum.model.hit.dto.GetHitDto;
-import ru.practicum.model.hit.dto.PostHitDto;
+import ru.practicum.model.hit.dto.HitDto;
+import ru.practicum.model.hit.dto.ViewHitStatsDto;
 import ru.practicum.repository.StatsRepository;
 
 import java.time.LocalDateTime;
@@ -17,23 +17,25 @@ public class StatsService {
 
     private final StatsRepository statsRepository;
 
-    public void postHit(PostHitDto postHitDto) {
-        Hit hit = HitMapper.toHit(postHitDto);
+    public void postHit(HitDto hitDto) {
+        Hit hit = HitMapper.toHit(hitDto);
         statsRepository.save(hit);
     }
 
-    public List<GetHitDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique) {
-        List<GetHitDto> result;
-        if (unique) {
-            if (uris == null) {
+    public List<ViewHitStatsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique) {
+        List<ViewHitStatsDto> result;
+        if (uris == null) {
+            if (unique) {
                 result = statsRepository.getUniqueStats(start, end);
             } else {
-                result = statsRepository.getUniqueStatsByUris(start, end, uris);
+                result = statsRepository.getStats(start, end);
             }
-        } else if (uris == null) {
-            result = statsRepository.getStats(start, end);
-        } else
-            result = statsRepository.getStatsByUris(start, end, uris);
+        } else {
+            if (unique) {
+                result = statsRepository.getUniqueStatsByUris(start, end, uris);
+            } else
+                result = statsRepository.getStatsByUris(start, end, uris);
+        }
         return result;
     }
 

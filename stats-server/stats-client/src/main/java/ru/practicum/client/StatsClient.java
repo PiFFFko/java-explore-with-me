@@ -6,8 +6,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
-import ru.practicum.model.hit.dto.GetHitDto;
-import ru.practicum.model.hit.dto.PostHitDto;
+import ru.practicum.model.hit.dto.ViewHitStatsDto;
+import ru.practicum.model.hit.dto.HitDto;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -22,14 +22,14 @@ public class StatsClient {
         restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
     }
 
-    public void postHit(PostHitDto postHitDto) {
+    public void postHit(HitDto hitDto) {
         String url = SERVER_URL + "/hit";
-        restTemplate.postForEntity(url, postHitDto, Void.class);
+        restTemplate.postForEntity(url, hitDto, Void.class);
     }
 
-    public List<GetHitDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique) {
+    public List<ViewHitStatsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique) {
         String url = SERVER_URL + "/stats?start={start}&end={end}&uris={uris}&unique={unique}";
-        ResponseEntity<List<GetHitDto>> responseEntity = restTemplate.exchange(
+        ResponseEntity<List<ViewHitStatsDto>> responseEntity = restTemplate.exchange(
                 url,
                 HttpMethod.GET,
                 HttpEntity.EMPTY,
