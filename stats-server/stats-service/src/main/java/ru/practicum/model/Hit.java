@@ -1,9 +1,6 @@
 package ru.practicum.model;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 
@@ -14,7 +11,8 @@ import java.time.LocalDateTime;
 @Table(name = "stats")
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
+@Setter
+@Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Hit {
 
