@@ -26,7 +26,7 @@ services:
       - POSTGRES_PASSWORD=root
 
   main-server:
-    build: main-server
+    build: ./main-server
     container_name: ewm-service
     restart: on-failure
     depends_on:
