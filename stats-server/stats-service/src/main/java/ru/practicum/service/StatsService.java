@@ -2,6 +2,7 @@ package ru.practicum.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.practicum.exception.EndBeforeStartException;
 import ru.practicum.mapper.HitMapper;
 import ru.practicum.model.Hit;
 import ru.practicum.model.hit.dto.HitDto;
@@ -24,6 +25,10 @@ public class StatsService {
 
     public List<ViewHitStatsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique) {
         List<ViewHitStatsDto> result;
+        if (end.isBefore(start)) {
+            throw new EndBeforeStartException();
+        }
+
         if (uris == null) {
             if (unique) {
                 result = statsRepository.getUniqueStats(start, end);
