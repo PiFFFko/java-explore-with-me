@@ -1,15 +1,20 @@
 package ru.practicum.service;
 
 import lombok.RequiredArgsConstructor;
+import org.hibernate.validator.internal.util.privilegedactions.LoadClass;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.client.StatsClient;
 import ru.practicum.exception.*;
+import ru.practicum.mapper.CommentMapper;
 import ru.practicum.mapper.EventMapper;
 import ru.practicum.mapper.RequestMapper;
 import ru.practicum.model.category.Category;
+import ru.practicum.model.comment.Comment;
+import ru.practicum.model.comment.dto.CommentDto;
+import ru.practicum.model.comment.dto.NewCommentDto;
 import ru.practicum.model.enums.SortBy;
 import ru.practicum.model.enums.State;
 import ru.practicum.model.enums.Status;
@@ -27,6 +32,7 @@ import ru.practicum.model.request.dto.ParticipationRequestDto;
 import ru.practicum.model.user.User;
 import ru.practicum.repository.*;
 
+import javax.persistence.criteria.CriteriaBuilder;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +49,8 @@ public class EventService {
     private final LocationRepository locationRepository;
     private final CategoryRepository categoryRepository;
     private final RequestRepository requestRepository;
+    private final CommentRepository commentRepository;
+    private final CommentMapper commentMapper;
     private final StatsClient statsClient;
 
     public List<EventShortDto> getUserEvents(Integer userId, Integer from, Integer size) {
@@ -85,7 +93,9 @@ public class EventService {
             throw new UserNotFoundException(userId);
         }
         Event event = eventRepository.findByInitiatorIdAndId(userId, eventId).orElseThrow(() -> new EventNotFoundException(eventId));
-        return eventMapper.eventToEventFullDto(event);
+        EventFullDto eventFullDto = eventMapper.eventToEventFullDto(event);
+        eventFullDto.setComments(commentMapper.listCommentsToListCommentDto(commentRepository.findByEventId(eventId)));
+        return eventFullDto;
     }
 
     //изменить можно только отмененные события или события в состоянии ожидания модерации (Ожидается код ошибки 409)
@@ -112,7 +122,9 @@ public class EventService {
         }
         Event event = updateEventFields(eventToUpdate, eventDto, categoryToUpdate);
         event = eventRepository.save(event);
-        return eventMapper.eventToEventFullDto(event);
+        EventFullDto eventFullDto = eventMapper.eventToEventFullDto(event);
+        eventFullDto.setComments(commentMapper.listCommentsToListCommentDto(commentRepository.findByEventId(eventId)));
+        return eventFullDto;
     }
 
     public List<ParticipationRequestDto> getEventRequestsForUser(Integer userId, Integer eventId) {
@@ -238,7 +250,9 @@ public class EventService {
             event.setViews(0);
         }
 
-        return eventMapper.eventToEventFullDto(event);
+        EventFullDto eventFullDto = eventMapper.eventToEventFullDto(event);
+        eventFullDto.setComments(commentMapper.listCommentsToListCommentDto(commentRepository.findByEventId(eventId)));
+        return eventFullDto;
     }
 
     //это публичный эндпоинт, соответственно в выдаче должны быть только опубликованные события
@@ -283,6 +297,74 @@ public class EventService {
             }
         }
         return eventMapper.listEventsToListEventShortDto(result);
+    }
+
+    public CommentDto createComment(Integer userId, Integer eventId, NewCommentDto newCommentDto) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> new EventNotFoundException(eventId));
+        Comment comment = new Comment();
+        comment.setText(newCommentDto.getText());
+        comment.setCreator(user);
+        comment.setEvent(event);
+        comment.setCreatedOn(LocalDateTime.now());
+        comment = commentRepository.save(comment);
+        return commentMapper.commentToCommentDto(comment);
+    }
+
+    public CommentDto updateComment(Integer userId, Integer eventId, Integer commentId, NewCommentDto newCommentDto) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> new EventNotFoundException(eventId));
+        Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CommentNotFoundException(commentId));
+        if (comment.getCreatedOn().plusDays(1).isBefore(LocalDateTime.now())) {
+            throw new UpdateCommentException("С создания комментария прошло больше суток. Изменение невозможно.");
+        }
+        if (!comment.getCreator().getId().equals(userId)) {
+            throw new UpdateCommentException("Вы не автор данного комментария");
+        }
+        comment.setText(newCommentDto.getText());
+        return commentMapper.commentToCommentDto(commentRepository.save(comment));
+
+    }
+
+    public void deleteComment(Integer userId, Integer eventId, Integer commentId) {
+        if (!userRepository.existsById(userId)) {
+            throw new UserNotFoundException(userId);
+        }
+        if (!eventRepository.existsById(eventId)) {
+            throw new EventNotFoundException(eventId);
+        }
+        Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CommentNotFoundException(commentId));
+        if (!comment.getCreator().getId().equals(userId)) {
+            throw new UpdateCommentException("Вы не автор данного комментария");
+        }
+        commentRepository.deleteById(commentId);
+
+    }
+
+    public void deleteCommentByAdmin(Integer eventId, Integer commentId) {
+        if (!eventRepository.existsById(eventId)) {
+            throw new EventNotFoundException(eventId);
+        }
+        if (!commentRepository.existsById(commentId)) {
+            throw new CommentNotFoundException(commentId);
+        }
+        commentRepository.deleteById(commentId);
+    }
+
+    public List<CommentDto> getCommentsForEvent(Integer eventId) {
+        if (!eventRepository.existsById(eventId)) {
+            throw new EventNotFoundException(eventId);
+        }
+        List<CommentDto> commentDtos = commentMapper.listCommentsToListCommentDto(commentRepository.findByEventId(eventId));
+        return commentDtos;
+    }
+
+    public CommentDto getComment(Integer eventId, Integer commentId) {
+        if (!eventRepository.existsById(eventId)) {
+            throw new EventNotFoundException(eventId);
+        }
+        Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CommentNotFoundException(commentId));
+        return commentMapper.commentToCommentDto(comment);
     }
 
     private Boolean validateDateTime(LocalDateTime dateTime) {
