@@ -28,12 +28,12 @@ public class StatsClient {
     }
 
     public void postHit(HitDto hitDto) {
-        String url = SERVER_URL + "/hit";
+        String url = URL + "/hit";
         restTemplate.postForEntity(url, hitDto, Void.class);
     }
 
     public List<ViewHitStatsDto> getStats(LocalDateTime start, LocalDateTime end, String[] uris, boolean unique) {
-        String url = SERVER_URL + "/stats?start={start}&end={end}&uris={uris}&unique={unique}";
+        String url = URL + "/stats?start={start}&end={end}&uris={uris}&unique={unique}";
         ResponseEntity<List<ViewHitStatsDto>> responseEntity = restTemplate.exchange(
                 url,
                 HttpMethod.GET,

@@ -1,7 +1,6 @@
 package ru.practicum.controller.event;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +15,6 @@ import ru.practicum.model.request.dto.EventRequestStatusUpdateRequest;
 import ru.practicum.model.request.dto.ParticipationRequestDto;
 import ru.practicum.service.EventService;
 
-import javax.persistence.criteria.CriteriaBuilder;
 import javax.validation.Valid;
 import java.util.List;
 
@@ -60,8 +58,8 @@ public class PrivateEventController {
 
     @PatchMapping("/{eventId}/requests")
     public ResponseEntity<EventRequestStatusUpdateDto> updateRequestStatus(@PathVariable Integer userId,
-                                                           @PathVariable Integer eventId,
-                                                           @RequestBody EventRequestStatusUpdateRequest statusUpdateRequest) {
+                                                                           @PathVariable Integer eventId,
+                                                                           @RequestBody EventRequestStatusUpdateRequest statusUpdateRequest) {
         return ResponseEntity.ok().body(eventService.updateRequestStatus(userId, eventId, statusUpdateRequest));
     }
 

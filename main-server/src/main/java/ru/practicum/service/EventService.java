@@ -1,7 +1,6 @@
 package ru.practicum.service;
 
 import lombok.RequiredArgsConstructor;
-import org.hibernate.validator.internal.util.privilegedactions.LoadClass;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -32,7 +31,6 @@ import ru.practicum.model.request.dto.ParticipationRequestDto;
 import ru.practicum.model.user.User;
 import ru.practicum.repository.*;
 
-import javax.persistence.criteria.CriteriaBuilder;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
