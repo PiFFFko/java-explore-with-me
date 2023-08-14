@@ -5,6 +5,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.client.StatsClient;
+import ru.practicum.model.comment.dto.CommentDto;
 import ru.practicum.model.enums.SortBy;
 import ru.practicum.model.event.dto.EventFullDto;
 import ru.practicum.model.event.dto.EventShortDto;
@@ -46,5 +47,15 @@ public class PublicEventController {
         statsClient.postHit(new HitDto("exploreWithMe", uri, httpServletRequest.getRemoteAddr(), LocalDateTime.now()));
         return ResponseEntity.ok().body(eventService.getEvent(eventId, uri));
     }
+
+    @GetMapping("/{eventId}/comments")
+    public ResponseEntity<List<CommentDto>> getCommentsForEvent(@PathVariable Integer eventId) {
+        return ResponseEntity.ok().body(eventService.getCommentsForEvent(eventId));
+    }
+
+    public ResponseEntity<CommentDto> getComment(@PathVariable Integer eventId, @PathVariable Integer commentId) {
+        return ResponseEntity.ok().body(eventService.getComment(eventId, commentId));
+    }
+
 
 }

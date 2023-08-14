@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.model.comment.dto.CommentDto;
+import ru.practicum.model.comment.dto.NewCommentDto;
 import ru.practicum.model.event.dto.EventFullDto;
 import ru.practicum.model.event.dto.EventShortDto;
 import ru.practicum.model.event.dto.NewEventDto;
@@ -56,10 +58,34 @@ public class PrivateEventController {
 
     @PatchMapping("/{eventId}/requests")
     public ResponseEntity<EventRequestStatusUpdateDto> updateRequestStatus(@PathVariable Integer userId,
-                                                           @PathVariable Integer eventId,
-                                                           @RequestBody EventRequestStatusUpdateRequest statusUpdateRequest) {
+                                                                           @PathVariable Integer eventId,
+                                                                           @RequestBody EventRequestStatusUpdateRequest statusUpdateRequest) {
         return ResponseEntity.ok().body(eventService.updateRequestStatus(userId, eventId, statusUpdateRequest));
     }
+
+    @PostMapping("/{eventId}/comments")
+    public ResponseEntity<CommentDto> createComment(@PathVariable Integer userId,
+                                                    @PathVariable Integer eventId,
+                                                    @RequestBody @Valid NewCommentDto newCommentDto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(eventService.createComment(userId, eventId, newCommentDto));
+    }
+
+    @PatchMapping("/{eventId}/comments/{commentId}")
+    public ResponseEntity<CommentDto> updateComment(@PathVariable Integer userId,
+                                                    @PathVariable Integer eventId,
+                                                    @PathVariable Integer commentId,
+                                                    @RequestBody @Valid NewCommentDto newCommentDto) {
+        return ResponseEntity.ok().body(eventService.updateComment(userId, eventId, commentId, newCommentDto));
+    }
+
+    @DeleteMapping("/{eventId}/comments/{commentId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteComment(@PathVariable Integer userId,
+                              @PathVariable Integer eventId,
+                              @PathVariable Integer commentId) {
+        eventService.deleteComment(userId, eventId, commentId);
+    }
+
 
 }
 

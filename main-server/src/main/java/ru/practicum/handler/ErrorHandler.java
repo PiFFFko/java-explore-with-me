@@ -35,7 +35,8 @@ public class ErrorHandler {
             UserNotFoundException.class,
             CompilationNotFoundException.class,
             EventNotFoundException.class,
-            RequestNotFoundException.class})
+            RequestNotFoundException.class,
+            CommentNotFoundException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ApiError handleNotFound(RuntimeException e) {
         return new ApiError(HttpStatus.NOT_FOUND.toString(), e.toString(), e.getMessage(), LocalDateTime.now().toString());
@@ -47,7 +48,8 @@ public class ErrorHandler {
             InvalidRequestStateException.class,
             RequestAlreadyExistException.class,
             SelfParticipationException.class,
-            DataIntegrityViolationException.class})
+            DataIntegrityViolationException.class,
+            UpdateCommentException.class})
     @ResponseStatus(HttpStatus.CONFLICT)
     public ApiError handleConflict(RuntimeException e) {
         return new ApiError(HttpStatus.CONFLICT.toString(), e.toString(), e.getMessage(), LocalDateTime.now().toString());
